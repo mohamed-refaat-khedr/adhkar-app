@@ -1,9 +1,11 @@
 /* أذكار المسلم — Service Worker
    يخزّن واجهة التطبيق (الصفحة والأيقونات والخطوط وصورة محمد رفعت) عند أول تحميل،
    فيعمل التطبيق من غير إنترنت للقراءة والعدّادات.
-   الصوت يُبث من GitHub ويبقى بالإنترنت فقط — لا يُخزَّن ولا يُعترض هنا. */
+   الصوت الآن ملفات محلية في مجلد audio/ وتُخزَّن عند أول تشغيل لكل ذكر،
+   فيعمل التطبيق كاملًا من غير إنترنت ومن غير أي اعتماد خارجي. */
 
-var CACHE_NAME = "adhkar-muslim-v1";
+var CACHE_NAME = "adhkar-muslim-v2";
+var AUDIO_CACHE = "adhkar-muslim-audio-v1";
 var FONT_CACHE = "adhkar-muslim-fonts-v1";
 
 var APP_SHELL = [
@@ -47,7 +49,7 @@ self.addEventListener("activate", function (event) {
       .then(function (keys) {
         return Promise.all(
           keys.map(function (key) {
-            if (key !== CACHE_NAME && key !== FONT_CACHE) {
+            if (key !== CACHE_NAME && key !== FONT_CACHE && key !== AUDIO_CACHE) {
               return caches.delete(key);
             }
           })
@@ -70,12 +72,29 @@ self.addEventListener("fetch", function (event) {
     return;
   }
 
-  /* الصوت من GitHub: شبكة فقط، لا تخزين ولا اعتراض */
+  /* أي طلب لمستودع GitHub خارجي (لم يعد يستخدمه التطبيق): شبكة فقط */
   if (
     url.hostname === "raw.githubusercontent.com" ||
-    url.hostname === "github.com" ||
-    url.pathname.indexOf(".mp3") !== -1
+    url.hostname === "github.com"
   ) {
+    return;
+  }
+
+  /* الصوت المحلي: من ذاكرة الصوت أولًا، ويُحفظ عند أول تشغيل ناجح */
+  if (url.origin === self.location.origin && url.pathname.indexOf(".mp3") !== -1) {
+    event.respondWith(
+      caches.open(AUDIO_CACHE).then(function (cache) {
+        return cache.match(request).then(function (cached) {
+          if (cached) return cached;
+          return fetch(request).then(function (response) {
+            if (response && response.status === 200) {
+              cache.put(request, response.clone());
+            }
+            return response;
+          });
+        });
+      })
+    );
     return;
   }
 

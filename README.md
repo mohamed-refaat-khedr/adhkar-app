@@ -5,6 +5,6 @@
 ## النشر على GitHub Pages
 1. ارفع كل الملفات التسعة هنا إلى مستودع عام باسم `adhkar-app` (كلها في الجذر، من غير مجلدات).
 2. من Settings ← Pages ← Branch: `main` ← `/ (root)` ← Save.
-3. الرابط الدائم: `https://ibrakhedr6-sketch.github.io/adhkar-app/`
+3. الرابط الدائم: `https://mohamed-refaat-khedr.github.io/adhkar-app/`
 
 الملفات: `index.html` + `sw.js` + `manifest.webmanifest` + الأيقونات + `mohamed-refaat.jpg`.
